@@ -51,7 +51,10 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         return Inertia::render('Projects/Show', [
-            'project' => $project->load('tasks'),
+            'project' => $project->load([
+                'tasks.subtasks',
+                'tasks.comments.user',
+            ]),
         ]);
     }
 }

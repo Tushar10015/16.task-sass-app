@@ -68,6 +68,44 @@
                   {{ task.status }}
                 </span>
               </div>
+              <!-- Subtasks -->
+              <div class="mt-3 space-y-1 pl-4 border-l">
+                <form @submit.prevent="submitSubtask(task.id)" class="flex gap-2 mt-2">
+                  <input v-model="subtaskForms[task.id]" type="text" placeholder="New subtask..."
+                    class="w-full border rounded-md px-2 py-1 text-sm" />
+                  <button type="submit" class="text-sm px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+                    Add
+                  </button>
+                </form>
+
+                <div v-if="task.subtasks.length" class="space-y-1">
+                  <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center gap-2">
+                    <input type="checkbox" :checked="subtask.is_done" @change="toggleSubtask(subtask.id)"
+                      class="rounded border-gray-300 text-indigo-600" />
+                    <label :class="{ 'line-through text-gray-500': subtask.is_done }">
+                      {{ subtask.title }}
+                    </label>
+                  </div>
+                </div>
+                <p v-else class="text-sm text-gray-500">No subtasks</p>
+              </div>
+
+              <!-- Comments -->
+              <div class="mt-4 pl-4 border-l pt-2 space-y-2">
+                <p class="text-sm text-gray-700 font-semibold">Comments</p>
+                <div v-for="comment in task.comments" :key="comment.id"
+                  class="text-sm bg-gray-50 p-2 rounded-md border">
+                  <span class="text-gray-800 font-medium">{{ comment.user.name }}:</span>
+                  <span class="text-gray-600">{{ comment.body }}</span>
+                  <div class="text-xs text-gray-400 mt-1">{{ formatDate(comment.created_at) }}</div>
+                </div>
+
+                <form @submit.prevent="submitComment(task.id)" class="mt-2">
+                  <input v-model="commentForms[task.id]" placeholder="Write a comment..."
+                    class="w-full border rounded-md px-3 py-1 text-sm" />
+                </form>
+              </div>
+
             </li>
           </ul>
 
@@ -81,7 +119,8 @@
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { useForm, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({ project: Object });
 
@@ -95,6 +134,44 @@ const submit = () => {
   form.post(route('tasks.store', props.project.id), {
     preserveScroll: true,
     onSuccess: () => form.reset(),
+  });
+};
+
+
+const commentForms = ref({});
+
+// Format date helper
+function formatDate(datetime) {
+  return new Date(datetime).toLocaleString();
+}
+
+// Toggle subtask done
+const toggleSubtask = (subtaskId) => {
+  router.put(`/subtasks/${subtaskId}/toggle`, {}, {
+    preserveScroll: true,
+  });
+};
+
+// Submit comment
+const submitComment = (taskId) => {
+  const body = commentForms.value[taskId];
+  if (!body) return;
+
+  router.post(`/tasks/${taskId}/comments`, { body }, {
+    preserveScroll: true,
+    onSuccess: () => (commentForms.value[taskId] = ''),
+  });
+};
+
+const subtaskForms = ref({});
+
+const submitSubtask = (taskId) => {
+  const title = subtaskForms.value[taskId];
+  if (!title) return;
+
+  router.post(`/tasks/${taskId}/subtasks`, { title }, {
+    preserveScroll: true,
+    onSuccess: () => subtaskForms.value[taskId] = '',
   });
 };
 
