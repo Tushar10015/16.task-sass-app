@@ -120,7 +120,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({ project: Object });
 
@@ -175,5 +175,55 @@ const submitSubtask = (taskId) => {
   });
 };
 
+onMounted(() => {
+  /*  window.Echo.private(`project.${props.project.id}`)
+     .listen('.comment.added', (e) => {
+       props.project.tasks.forEach(task => {
+         if (task.id === e.comment.task_id) {
+           task.comments.push(e.comment); // live push
+           alert('Comment added successfully');
+         }
+       });
+     }); */
+
+  window.Echo.channel(`project.${props.project.id}`)
+    .listen('.comment.added', (e) => {
+      props.project.tasks.forEach(task => {
+        console.log([...task.comments]);  // First log
+        if (task.id === e.comment.task_id) {
+          task.comments.push({
+            id: Math.floor(Math.random() * 100000000) + 1,
+            body: 'This is a static comment',
+            user: {
+              name: 'John Doe'
+            },
+            created_at: new Date().toLocaleString(),
+          }); // live push
+          console.log([...task.comments]);  // Second log
+          alert('Comment added successfully');
+        }
+      });
+    });
+
+});
+
+
+console.log('Subscribing to: project.' + props.project.id);
+
+window.Echo.connector.pusher.connection.bind('state_change', (states) => {
+  console.log('Pusher connection state:', states.current);
+});
+
+Echo.connector.pusher.connection.bind('connected', () => {
+  console.log('✅ Echo connected:', Echo.socketId());
+});
+
+Echo.connector.pusher.connection.bind('disconnected', () => {
+  console.log('❌ Echo disconnected');
+});
+
+Echo.connector.pusher.connection.bind('message', (message) => {
+  console.log('🛰️ Raw Pusher Message:', message);
+});
 
 </script>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\{Comment, Task};
+use App\Events\CommentAdded;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
@@ -12,10 +14,15 @@ class CommentController extends Controller
     {
         $request->validate(['body' => 'required|string']);
 
-        $task->comments()->create([
+        $comment = $task->comments()->create([
             'user_id' => auth()->id(),
             'body' => $request->body,
         ]);
+
+        broadcast(new CommentAdded($comment));
+        //event(new CommentAdded($comment));
+
+        //broadcast(new CommentAdded($comment))->toOthers();
 
         return back();
     }

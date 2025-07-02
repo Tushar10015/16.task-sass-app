@@ -1,5 +1,7 @@
 <?php
 
+use App\Events\CommentAdded;
+use App\Events\TestEvent;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -7,6 +9,8 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\SubtaskController;
+use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -28,9 +32,6 @@ Route::middleware([
 });
 
 
-
-
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
@@ -47,4 +48,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::put('/subtasks/{subtask}/toggle', [SubtaskController::class, 'toggle'])->name('subtasks.toggle');
     Route::post('/tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');
+});
+
+
+Route::get('/test-pusher', function () {
+    try {
+        $pusher = new Pusher\Pusher(
+            config('broadcasting.connections.pusher.key'),
+            config('broadcasting.connections.pusher.secret'),
+            config('broadcasting.connections.pusher.app_id'),
+            config('broadcasting.connections.pusher.options')
+        );
+        $comment = App\Models\Comment::with('user', 'task')->first();
+        //$response = $pusher->trigger('test-channel', 'test-event', ['message' => 'Hello']);
+        $response = $pusher->trigger('project.9', 'comment.added', ['message' => $comment]);
+        return response()->json(['success' => true, 'response' => $response]);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/fire', function () {
+    broadcast(new TestEvent());
+    return 'Test event fired';
 });
