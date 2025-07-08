@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Project, Task};
+use App\Models\{Project, Task, User};
+use App\Notifications\TaskAssignedNotification;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TaskController extends Controller
@@ -15,12 +17,20 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'in:todo,in_progress,done',
+            'assigned_to' => 'nullable|exists:users,id',
         ]);
 
-        $project->tasks()->create([
+
+        $task = $project->tasks()->create([
             ...$data,
-            'user_id' => auth()->id(),
+            'user_id' => auth()->id(), // creator
         ]);
+
+        // 🔔 Notify assigned user if any
+        if (!empty($data['assigned_to'])) {
+            $user = User::find($data['assigned_to']);
+            $user->notify(new TaskAssignedNotification($task));
+        }
 
         return redirect()->route('projects.show', $project->id);
     }

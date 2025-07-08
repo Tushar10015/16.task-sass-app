@@ -40,6 +40,14 @@
                 <label class="block text-sm text-gray-700">Description</label>
                 <textarea v-model="form.description" rows="3" class="w-full border rounded-md"></textarea>
               </div>
+              <div class="mt-4">
+                <label class="block text-sm text-gray-700">Assign To</label>
+                <select v-model="form.assigned_to" class="mt-1 w-full border rounded-md">
+                  <option v-for="user in users" :key="user.id" :value="user.id">
+                    {{ user.name }}
+                  </option>
+                </select>
+              </div>
               <div class="mt-4 text-right">
                 <button type="submit"
                   class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
@@ -122,11 +130,12 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link, router } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
-const props = defineProps({ project: Object });
+const props = defineProps({ project: Object, users: Array, auth: Object });
 
 const form = useForm({
   title: '',
   description: '',
+  assigned_to: null,
   status: 'todo',
 });
 
@@ -203,6 +212,12 @@ onMounted(() => {
           alert('Comment added successfully');
         }
       });
+    });
+
+  window.Echo.channel(`App.Models.User.1`) // 1 will be dynamic
+    .notification((notification) => {
+      console.log('Notification received:', notification);
+      alert('Notification received');
     });
 
 });

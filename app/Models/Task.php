@@ -15,6 +15,7 @@ class Task extends Model
         'status',
         'project_id',
         'user_id',
+        'assigned_to',
     ];
 
     public function project()

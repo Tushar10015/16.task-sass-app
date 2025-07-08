@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Project;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\User;
 
 class ProjectController extends Controller
 {
@@ -49,12 +50,12 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         $this->authorize('view', $project);
-
         return Inertia::render('Projects/Show', [
             'project' => $project->load([
                 'tasks.subtasks',
                 'tasks.comments.user',
             ]),
+            'users' => auth()->user()->currentTeam->users
         ]);
     }
 }
