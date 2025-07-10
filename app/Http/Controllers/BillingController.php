@@ -13,7 +13,9 @@ class BillingController extends Controller
     {
         $team = auth()->user()->currentTeam;
 
-        $checkout = $team->newSubscription('default', 'price_1RjHs3PqRcKc5tWrkjdYEimv')
+        $price = config('plans.' . $request->plan);
+
+        $checkout = $team->newSubscription('default', $price)
             ->checkout([
                 'success_url' => route('billing.success'),
                 'cancel_url' => route('billing.cancel'),

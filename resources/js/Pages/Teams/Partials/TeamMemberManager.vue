@@ -302,7 +302,7 @@ function subscribe(plan) {
                 <!-- Subscription Price -->
                 <template #content>
                     <div class="space-y-6">
-                        <form @submit.prevent="subscribe('pro-monthly')">
+                        <form @submit.prevent="subscribe('pro_monthly')">
                             <button class="btn ">Upgrade to Pro</button>
                         </form>
                     </div>
