@@ -11,6 +11,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\SubtaskController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\BillingController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -49,6 +50,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/subtasks/{subtask}/toggle', [SubtaskController::class, 'toggle'])->name('subtasks.toggle');
     Route::post('/tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');
 });
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/billing/checkout', [BillingController::class, 'redirectToCheckout'])->name('billing.checkout');
+    Route::get('/billing/success', [BillingController::class, 'success'])->name('billing.success');
+    Route::get('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
+});
+
 
 
 Route::get('/test-pusher', function () {

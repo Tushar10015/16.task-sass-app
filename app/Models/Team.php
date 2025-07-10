@@ -8,11 +8,13 @@ use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Cashier\Billable;
 
 class Team extends JetstreamTeam
 {
     /** @use HasFactory<\Database\Factories\TeamFactory> */
     use HasFactory;
+    use Billable;
 
     /**
      * The attributes that are mass assignable.
@@ -48,8 +50,7 @@ class Team extends JetstreamTeam
     }
 
     public function projects()
-{
-    return $this->hasMany(Project::class);
-}
-
+    {
+        return $this->hasMany(Project::class);
+    }
 }
